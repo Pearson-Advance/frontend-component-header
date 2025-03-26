@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Responsive from 'react-responsive';
 import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { AppContext } from '@edx/frontend-platform/react';
@@ -8,7 +9,15 @@ import {
   mergeConfig,
   getConfig,
   subscribe,
+  initialize,
 } from '@edx/frontend-platform';
+
+import {
+  DEFAULT_ROLES,
+  ROLES_PRIORITY,
+  ROLES_PERMISSIONS,
+  EDX_HEADER_COOKIE_PAYLOAD,
+} from './constants';
 
 import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
@@ -30,8 +39,71 @@ subscribe(APP_CONFIG_INITIALIZED, () => {
   }, 'Header additional config');
 });
 
-const Header = ({ intl }) => {
+function getCookie(name) {
+  return document.cookie
+    .split('; ')
+    .map(c => c.split('='))
+    .find(([key]) => key === name)?.[1] || null;
+}
+
+const getUserLinksByRole = (userRoles) => {
+  const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+
+  if (!roles.length) {
+    return DEFAULT_ROLES;
+  }
+
+  const validRoles = roles.filter(role => ROLES_PRIORITY.includes(role));
+
+  if (!validRoles.length) {
+    return DEFAULT_ROLES;
+  }
+
+  const sortedRoles = validRoles.sort((a, b) => ROLES_PRIORITY.indexOf(a) - ROLES_PRIORITY.indexOf(b));
+
+  const highestRole = sortedRoles[0];
+
+  return ROLES_PERMISSIONS[highestRole] || [];
+};
+
+const Header = ({ intl, appID }) => {
+  useEffect(() => {
+    initialize({
+      messages: [],
+      requireAuthenticatedUser: true,
+      handlers: {
+        config: () => {
+          mergeConfig({
+            MFE_CONFIG_API_URL: `${process.env.LMS_BASE_URL}/api/mfe_config/v1`,
+            APP_ID: appID,
+          });
+        },
+      },
+    });
+  }, [appID]);
+
   const { authenticatedUser, config } = useContext(AppContext);
+
+  const headerPayload = getCookie(EDX_HEADER_COOKIE_PAYLOAD);
+
+  /*
+      |￣￣￣￣￣
+      | // TODO: Remove this once the cookie implementation is ready
+      |＿＿＿_
+  (\__/)||
+  (•ㅅ•)||
+  /  づ
+  */
+  const roles = 'institution_admin' || DEFAULT_ROLES;
+  let f;
+
+  if (headerPayload) {
+    const [, payload] = headerPayload.split('.').map(part => JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))));
+    f = payload;
+  }
+
+  const items = getUserLinksByRole(roles);
+  console.log(f);
 
   const mainMenu = [
     {
@@ -53,6 +125,7 @@ const Header = ({ intl }) => {
       href: `${config.LMS_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.user.menu.dashboard']),
     },
+    ...items,
     {
       type: 'item',
       href: `${config.ACCOUNT_PROFILE_URL}/u/${authenticatedUser.username}`,
@@ -114,6 +187,11 @@ const Header = ({ intl }) => {
 
 Header.propTypes = {
   intl: intlShape.isRequired,
+  appID: PropTypes.string,
+};
+
+Header.defaultProps = {
+  appID: 'header-component',
 };
 
 export default injectIntl(Header);
