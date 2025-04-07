@@ -52,6 +52,7 @@ class MockLoggingService {
 export const authenticatedUser = {
   userId: 'abc123',
   username: 'Mock User',
+  name: 'Mock User Name',
   roles: [],
   administrator: false,
 };
@@ -73,6 +74,7 @@ export function initializeMockApp() {
 
     authenticatedUser: {
       userId: 'abc123',
+      name: 'Mock User Name',
       username: 'Mock User',
       roles: [],
       administrator: false,

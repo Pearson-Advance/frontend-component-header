@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import { getConfig } from '@edx/frontend-platform';
+import { AppContext } from '@edx/frontend-platform/react';
 import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { Dropdown } from '@edx/paragon';
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,6 +19,9 @@ const AuthenticatedUserDropdown = ({ intl, username }) => {
   const showNotificationsTray = useSelector(selectShowNotificationTray());
   const notificationStatus = useSelector(selectNotificationStatus());
   const dispatch = useDispatch();
+  const { authenticatedUser } = useContext(AppContext);
+
+  const displayName = authenticatedUser?.name || username;
 
   useEffect(() => {
     if (notificationStatus === RequestStatus.IDLE) {
@@ -40,7 +44,7 @@ const AuthenticatedUserDropdown = ({ intl, username }) => {
         <Dropdown.Toggle variant="outline-primary">
           <FontAwesomeIcon icon={faUserCircle} className="d-md-none" size="lg" />
           <span data-hj-suppress className="d-none d-md-inline">
-            {username}
+            {displayName}
           </span>
         </Dropdown.Toggle>
         <Dropdown.Menu className="dropdown-menu-right">
