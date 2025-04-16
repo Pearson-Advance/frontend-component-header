@@ -9,9 +9,11 @@ import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { Dropdown } from '@openedx/paragon';
 
 import messages from './messages';
+import useGetMenuOptionsByRole from '../hooks';
 
 const AuthenticatedUserDropdown = ({ intl, username }) => {
   const { authenticatedUser } = useContext(AppContext);
+  const itemsByRole = useGetMenuOptionsByRole();
 
   const displayName = authenticatedUser?.name || username;
 
@@ -33,6 +35,11 @@ const AuthenticatedUserDropdown = ({ intl, username }) => {
         </Dropdown.Toggle>
         <Dropdown.Menu className="dropdown-menu-right">
           {dashboardMenuItem}
+          {itemsByRole.map(({ href, content }) => (
+            <Dropdown.Item key={href} href={href}>
+              {content}
+            </Dropdown.Item>
+          ))}
           <Dropdown.Item href={`${getConfig().ACCOUNT_PROFILE_URL}/u/${username}`}>
             {intl.formatMessage(messages.profile)}
           </Dropdown.Item>

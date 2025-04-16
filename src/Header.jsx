@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Responsive from 'react-responsive';
 import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { AppContext } from '@edx/frontend-platform/react';
@@ -9,6 +10,8 @@ import {
   getConfig,
   subscribe,
 } from '@edx/frontend-platform';
+
+import useGetMenuOptionsByRole from './hooks';
 
 import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
@@ -30,8 +33,10 @@ subscribe(APP_CONFIG_INITIALIZED, () => {
   }, 'Header additional config');
 });
 
-const Header = ({ intl }) => {
+const Header = ({ intl, appID }) => {
   const { authenticatedUser, config } = useContext(AppContext);
+
+  const itemsByRole = useGetMenuOptionsByRole(appID);
 
   const mainMenu = [
     {
@@ -53,6 +58,7 @@ const Header = ({ intl }) => {
       href: `${config.LMS_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.user.menu.dashboard']),
     },
+    ...itemsByRole,
     {
       type: 'item',
       href: `${config.ACCOUNT_PROFILE_URL}/u/${authenticatedUser.username}`,
@@ -114,6 +120,11 @@ const Header = ({ intl }) => {
 
 Header.propTypes = {
   intl: intlShape.isRequired,
+  appID: PropTypes.string,
+};
+
+Header.defaultProps = {
+  appID: 'header-component',
 };
 
 export default injectIntl(Header);
