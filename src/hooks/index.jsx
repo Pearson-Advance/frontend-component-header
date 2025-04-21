@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { initialize, mergeConfig, getConfig } from '@edx/frontend-platform';
+import { logError } from '@edx/frontend-platform/logging';
 
 import { getUserRolesFromCookie, DEFAULT_ROLES } from '../helpers';
 
@@ -8,26 +8,13 @@ const INSTITUTION_ADMIN = 'INSTITUTION_ADMIN';
 const INSTRUCTOR = 'INSTRUCTOR';
 const ROLES_PRIORITY = [GLOBAL_STAFF, INSTITUTION_ADMIN, INSTRUCTOR];
 
-function useInitializeConfig(appID) {
-  useEffect(() => {
-    initialize({
-      messages: [],
-      requireAuthenticatedUser: true,
-      handlers: {
-        config: () => {
-          const configOptions = {
-            MFE_CONFIG_API_URL: `${process.env.LMS_BASE_URL}/api/mfe_config/v1`,
-          };
+async function fetchMfeConfig(id = '') {
+  const URL = `${process.env.LMS_BASE_URL}/api/mfe_config/v1?mfe=${id}`;
+  const res = await fetch(URL);
 
-          if (appID) {
-            configOptions.APP_ID = appID;
-          }
+  if (!res.ok) { return logError('Unable to get mfe settings'); }
 
-          mergeConfig(configOptions);
-        },
-      },
-    });
-  }, [appID]);
+  return res.json();
 }
 
 function getUserLinksByRole(userRoles, paths) {
@@ -69,29 +56,32 @@ function getUserLinksByRole(userRoles, paths) {
   return ROLES_PERMISSIONS[highestRole] || [];
 }
 
+export async function loadMenuOptions(appID) {
+  const mfeSettings = await fetchMfeConfig(appID);
+
+  if (!mfeSettings.ENABLE_DROPDOWN_CUSTOM_OPTIONS) {
+    return [];
+  }
+
+  const roles = getUserRolesFromCookie();
+
+  return getUserLinksByRole(roles, {
+    instructorPath: mfeSettings.INSTRUCTOR_PORTAL_PATH,
+    institutionPath: mfeSettings.INSTITUTION_PORTAL_PATH,
+  });
+}
+
 function useGetMenuOptionsByRole(appID) {
-  const enableDropDownSettings = getConfig().ENABLE_DROPDOWN_CUSTOM_OPTIONS;
   const [userLinks, setUserLinks] = useState([]);
 
-  useInitializeConfig(appID);
-
-  const instructorPath = getConfig().INSTRUCTOR_PORTAL_PATH;
-  const institutionPath = getConfig().INSTITUTION_PORTAL_PATH;
-
   useEffect(() => {
-    if (!enableDropDownSettings) {
-      setUserLinks([]);
-      return;
-    }
-
-    const roles = getUserRolesFromCookie();
-    const menuOptions = getUserLinksByRole(roles, {
-      instructorPath,
-      institutionPath,
-    });
-
-    setUserLinks(menuOptions);
-  }, [instructorPath, institutionPath, enableDropDownSettings]);
+    loadMenuOptions(appID)
+      .then(setUserLinks)
+      .catch((err) => {
+        logError('Error loading custom options:', err);
+        setUserLinks([]);
+      });
+  }, [appID]);
 
   return userLinks;
 }
