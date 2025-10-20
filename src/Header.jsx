@@ -44,7 +44,12 @@ const Header = ({ intl, appID }) => {
       href: `${config.LMS_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.links.courses']),
     },
-  ];
+    config.ENABLE_EXAM_DASHBOARD && {
+      type: 'item',
+      href: `${config.EXAM_DASHBOARD_MFE_BASE_URL}/dashboard`,
+      content: intl.formatMessage(messages['header.links.exams']),
+    },
+  ].filter(Boolean);
 
   const orderHistoryItem = {
     type: 'item',
