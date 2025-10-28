@@ -587,12 +587,6 @@ exports[`<Header /> renders exam dashboard link when ENABLE_EXAM_DASHBOARD is tr
         >
           Courses
         </a>
-        <a
-          className="nav-link"
-          href="http://localhost:1994/dashboard"
-        >
-          Exams
-        </a>
       </nav>
       <nav
         aria-label="Secondary"
