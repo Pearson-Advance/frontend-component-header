@@ -1,6 +1,6 @@
 {
   "name": "@pearsonedunext/frontend-component-header",
-  "version": "4.11.1-post.3",
+  "version": "4.11.1-post.4",
   "description": "The standard header for Open edX",
   "main": "dist/index.js",
   "publishConfig": {
