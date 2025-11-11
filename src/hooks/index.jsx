@@ -8,13 +8,41 @@ const INSTITUTION_ADMIN = 'INSTITUTION_ADMIN';
 const INSTRUCTOR = 'INSTRUCTOR';
 const ROLES_PRIORITY = [GLOBAL_STAFF, INSTITUTION_ADMIN, INSTRUCTOR];
 
+const configCache = new Map();
+const inFlightRequests = new Map(); // request de-duplication pattern
+
 async function fetchMfeConfig(id = '') {
-  const URL = `${process.env.LMS_BASE_URL}/api/mfe_config/v1?mfe=${id}`;
-  const res = await fetch(URL);
+  if (configCache.has(id)) {
+    return configCache.get(id);
+  }
 
-  if (!res.ok) { return logError('Unable to get mfe settings'); }
+  if (inFlightRequests.has(id)) {
+    return inFlightRequests.get(id);
+  }
 
-  return res.json();
+  const request = (async () => {
+    try {
+      const url = `${process.env.LMS_BASE_URL}/api/mfe_config/v1?mfe=${id}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        logError('Unable to get mfe settings');
+        return {};
+      }
+
+      const config = await response.json();
+      configCache.set(id, config);
+      return config;
+    } catch (error) {
+      logError('Error fetching MFE config:', error);
+      return {};
+    } finally {
+      inFlightRequests.delete(id);
+    }
+  })();
+
+  inFlightRequests.set(id, request);
+  return request;
 }
 
 function getUserLinksByRole(userRoles, paths) {
@@ -56,34 +84,28 @@ function getUserLinksByRole(userRoles, paths) {
   return ROLES_PERMISSIONS[highestRole] || [];
 }
 
-export async function loadMenuOptions(appID) {
-  const mfeSettings = await fetchMfeConfig(appID);
+export function useGetMFEConfig(appID) {
+  const [mfeConfig, setMfeConfig] = useState({});
 
-  if (!mfeSettings.ENABLE_DROPDOWN_CUSTOM_OPTIONS) {
+  useEffect(() => {
+    fetchMfeConfig(appID).then(setMfeConfig);
+  }, [appID]);
+
+  return mfeConfig;
+}
+
+function useGetMenuOptionsByRole(appID) {
+  const mfeConfig = useGetMFEConfig(appID);
+
+  if (!mfeConfig.ENABLE_DROPDOWN_CUSTOM_OPTIONS) {
     return [];
   }
 
   const roles = getUserRolesFromCookie();
-
   return getUserLinksByRole(roles, {
-    instructorPath: mfeSettings.INSTRUCTOR_PORTAL_PATH,
-    institutionPath: mfeSettings.INSTITUTION_PORTAL_PATH,
+    instructorPath: mfeConfig.INSTRUCTOR_PORTAL_PATH,
+    institutionPath: mfeConfig.INSTITUTION_PORTAL_PATH,
   });
-}
-
-function useGetMenuOptionsByRole(appID) {
-  const [userLinks, setUserLinks] = useState([]);
-
-  useEffect(() => {
-    loadMenuOptions(appID)
-      .then(setUserLinks)
-      .catch((err) => {
-        logError('Error loading custom options:', err);
-        setUserLinks([]);
-      });
-  }, [appID]);
-
-  return userLinks;
 }
 
 export default useGetMenuOptionsByRole;

@@ -11,7 +11,7 @@ import {
   subscribe,
 } from '@edx/frontend-platform';
 
-import useGetMenuOptionsByRole from './hooks';
+import useGetMenuOptionsByRole, { useGetMFEConfig } from './hooks';
 
 import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
@@ -37,6 +37,7 @@ const Header = ({ intl, appID }) => {
   const { authenticatedUser, config } = useContext(AppContext);
 
   const itemsByRole = useGetMenuOptionsByRole(appID);
+  const mfeConfigs = useGetMFEConfig(appID);
 
   const mainMenu = [
     {
@@ -44,7 +45,12 @@ const Header = ({ intl, appID }) => {
       href: `${config.LMS_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.links.courses']),
     },
-  ];
+    mfeConfigs.ENABLE_EXAM_DASHBOARD && {
+      type: 'item',
+      href: `${mfeConfigs.EXAM_DASHBOARD_MFE_BASE_URL}/dashboard`,
+      content: intl.formatMessage(messages['header.links.exams']),
+    },
+  ].filter(Boolean);
 
   const orderHistoryItem = {
     type: 'item',

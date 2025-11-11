@@ -6,6 +6,11 @@ const messages = defineMessages({
     defaultMessage: 'Courses',
     description: 'Link to the learner course dashboard',
   },
+  'header.links.exams': {
+    id: 'header.links.exams',
+    defaultMessage: 'Exams',
+    description: 'Link to the learner course exams dashboard',
+  },
   'header.links.programs': {
     id: 'header.links.programs',
     defaultMessage: 'Programs',
