@@ -47,7 +47,7 @@ const Header = ({ intl, appID }) => {
     },
     mfeConfigs.ENABLE_EXAM_DASHBOARD && {
       type: 'item',
-      href: `${mfeConfigs.EXAM_DASHBOARD_MFE_BASE_URL}/dashboard`,
+      href: `${mfeConfigs.WEBNG_EXAM_MFE_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.links.exams']),
     },
   ].filter(Boolean);
