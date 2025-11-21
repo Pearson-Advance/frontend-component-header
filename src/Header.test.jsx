@@ -18,7 +18,7 @@ jest.mock('./hooks', () => ({
   default: jest.fn(() => []),
   useGetMFEConfig: jest.fn(() => ({
     ENABLE_EXAM_DASHBOARD: false,
-    EXAM_DASHBOARD_MFE_BASE_URL: 'http://localhost:1994',
+    WEBNG_EXAM_MFE_BASE_URL: 'http://localhost:1994',
   })),
 }));
 
@@ -125,7 +125,7 @@ describe('<Header />', () => {
   it('renders exam dashboard link when ENABLE_EXAM_DASHBOARD is true (desktop)', () => {
     useGetMFEConfig.mockReturnValue({
       ENABLE_EXAM_DASHBOARD: true,
-      EXAM_DASHBOARD_MFE_BASE_URL: 'http://localhost:1994',
+      WEBNG_EXAM_MFE_BASE_URL: 'http://localhost:1994',
     });
 
     const contextValue = {
@@ -156,7 +156,7 @@ describe('<Header />', () => {
   it('renders exam dashboard link when ENABLE_EXAM_DASHBOARD is true (mobile)', () => {
     useGetMFEConfig.mockReturnValue({
       ENABLE_EXAM_DASHBOARD: true,
-      EXAM_DASHBOARD_MFE_BASE_URL: 'http://localhost:1994',
+      WEBNG_EXAM_MFE_BASE_URL: 'http://localhost:1994',
     });
 
     const contextValue = {
