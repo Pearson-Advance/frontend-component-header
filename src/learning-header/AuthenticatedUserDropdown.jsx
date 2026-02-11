@@ -11,10 +11,12 @@ import LearningUserMenuToggleSlot from '../plugin-slots/LearningUserMenuToggleSl
 import LearningUserMenuSlot from '../plugin-slots/LearningUserMenuSlot';
 
 import messages from './messages';
+import useGetMenuOptionsByRole from '../hooks';
 
 const AuthenticatedUserDropdown = ({ username }) => {
   const intl = useIntl();
   const { authenticatedUser } = useContext(AppContext);
+  const itemsByRole = useGetMenuOptionsByRole();
 
   const displayName = authenticatedUser?.name || username;
 
@@ -23,6 +25,7 @@ const AuthenticatedUserDropdown = ({ username }) => {
       message: intl.formatMessage(messages.dashboard),
       href: `${getConfig().LMS_BASE_URL}/dashboard`,
     },
+    ...itemsByRole,
     {
       message: intl.formatMessage(messages.profile),
       href: `${getConfig().ACCOUNT_PROFILE_URL}/u/${username}`,
