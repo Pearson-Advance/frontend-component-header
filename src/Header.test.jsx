@@ -7,6 +7,10 @@ import { Context as ResponsiveContext } from 'react-responsive';
 
 import Header from './index';
 
+jest.mock('@edx/frontend-platform/logging', () => ({
+  logError: jest.fn(),
+}));
+
 const HeaderComponent = ({ width, contextValue }) => (
   <ResponsiveContext.Provider value={width}>
     <IntlProvider locale="en" messages={{}}>

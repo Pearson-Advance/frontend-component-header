@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import { getConfig } from '@edx/frontend-platform';
+import { AppContext } from '@edx/frontend-platform/react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Dropdown } from '@openedx/paragon';
 
@@ -10,14 +11,21 @@ import LearningUserMenuToggleSlot from '../plugin-slots/LearningUserMenuToggleSl
 import LearningUserMenuSlot from '../plugin-slots/LearningUserMenuSlot';
 
 import messages from './messages';
+import useGetMenuOptionsByRole from '../hooks';
 
 const AuthenticatedUserDropdown = ({ username }) => {
   const intl = useIntl();
+  const { authenticatedUser } = useContext(AppContext);
+  const itemsByRole = useGetMenuOptionsByRole();
+
+  const displayName = authenticatedUser?.name || username;
+
   const dropdownItems = [
     {
       message: intl.formatMessage(messages.dashboard),
       href: `${getConfig().LMS_BASE_URL}/dashboard`,
     },
+    ...itemsByRole,
     {
       message: intl.formatMessage(messages.profile),
       href: `${getConfig().ACCOUNT_PROFILE_URL}/u/${username}`,
@@ -39,7 +47,7 @@ const AuthenticatedUserDropdown = ({ username }) => {
   return (
     <Dropdown className="user-dropdown ml-3">
       <Dropdown.Toggle variant="outline-primary" aria-label={intl.formatMessage(messages.userOptionsDropdownLabel)}>
-        <LearningUserMenuToggleSlot label={username} icon={faUserCircle} />
+        <LearningUserMenuToggleSlot label={displayName} icon={faUserCircle} />
       </Dropdown.Toggle>
       <Dropdown.Menu className="dropdown-menu-right">
         <LearningUserMenuSlot items={dropdownItems} />

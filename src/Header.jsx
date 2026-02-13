@@ -11,6 +11,8 @@ import {
 } from '@edx/frontend-platform';
 
 import PropTypes from 'prop-types';
+import useGetMenuOptionsByRole from './hooks';
+
 import DesktopHeaderSlot from './plugin-slots/DesktopHeaderSlot';
 import MobileHeaderSlot from './plugin-slots/MobileHeaderSlot';
 
@@ -47,10 +49,12 @@ subscribe(APP_CONFIG_INITIALIZED, () => {
  * See the documentation for the structure of user menu item.
  */
 const Header = ({
-  mainMenuItems, secondaryMenuItems, userMenuItems,
+  mainMenuItems, secondaryMenuItems, userMenuItems, appID,
 }) => {
   const { authenticatedUser, config } = useContext(AppContext);
   const intl = useIntl();
+
+  const itemsByRole = useGetMenuOptionsByRole(appID);
 
   const defaultMainMenu = [
     {
@@ -67,6 +71,7 @@ const Header = ({
         href: `${config.LMS_BASE_URL}/dashboard`,
         content: intl.formatMessage(messages['header.user.menu.dashboard']),
       },
+      ...itemsByRole,
       {
         type: 'item',
         href: `${config.ACCOUNT_PROFILE_URL}/u/${authenticatedUser.username}`,
@@ -113,7 +118,7 @@ const Header = ({
     logoAltText: config.SITE_NAME,
     logoDestination: `${config.LMS_BASE_URL}/dashboard`,
     loggedIn: authenticatedUser !== null,
-    username: authenticatedUser !== null ? authenticatedUser.username : null,
+    username: authenticatedUser !== null ? authenticatedUser.name || authenticatedUser.username : null,
     avatar: authenticatedUser !== null ? authenticatedUser.avatar : null,
     mainMenu: getConfig().AUTHN_MINIMAL_HEADER ? [] : mainMenu,
     secondaryMenu: getConfig().AUTHN_MINIMAL_HEADER ? [] : secondaryMenu,
@@ -137,6 +142,7 @@ Header.defaultProps = {
   mainMenuItems: null,
   secondaryMenuItems: null,
   userMenuItems: null,
+  appID: 'header-component',
 };
 
 Header.propTypes = {
@@ -157,6 +163,7 @@ Header.propTypes = {
       isActive: PropTypes.bool,
     })),
   })),
+  appID: PropTypes.string,
 };
 
 export default Header;
