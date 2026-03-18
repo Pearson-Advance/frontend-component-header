@@ -49,7 +49,7 @@ subscribe(APP_CONFIG_INITIALIZED, () => {
  * See the documentation for the structure of user menu item.
  */
 const Header = ({
-  mainMenuItems, secondaryMenuItems, userMenuItems, appID,
+  secondaryMenuItems, appID,
 }) => {
   const { authenticatedUser, config } = useContext(AppContext);
   const intl = useIntl();
@@ -96,9 +96,9 @@ const Header = ({
     ],
   }];
 
-  const mainMenu = mainMenuItems || defaultMainMenu;
+  const mainMenu = defaultMainMenu;
   const secondaryMenu = secondaryMenuItems || [];
-  const userMenu = authenticatedUser === null ? [] : userMenuItems || defaultUserMenu;
+  const userMenu = authenticatedUser === null ? [] : defaultUserMenu;
 
   const loggedOutItems = [
     {
@@ -139,30 +139,15 @@ const Header = ({
 };
 
 Header.defaultProps = {
-  mainMenuItems: null,
   secondaryMenuItems: null,
-  userMenuItems: null,
   appID: 'header-component',
 };
 
 Header.propTypes = {
-  mainMenuItems: PropTypes.oneOfType([
-    PropTypes.node,
-    PropTypes.array,
-  ]),
   secondaryMenuItems: PropTypes.oneOfType([
     PropTypes.node,
     PropTypes.array,
   ]),
-  userMenuItems: PropTypes.arrayOf(PropTypes.shape({
-    heading: PropTypes.string,
-    items: PropTypes.arrayOf(PropTypes.shape({
-      type: PropTypes.oneOf(['item', 'menu']),
-      href: PropTypes.string,
-      content: PropTypes.string,
-      isActive: PropTypes.bool,
-    })),
-  })),
   appID: PropTypes.string,
 };
 
