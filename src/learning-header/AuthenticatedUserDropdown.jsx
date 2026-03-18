@@ -16,7 +16,10 @@ import useGetMenuOptionsByRole from '../hooks';
 const AuthenticatedUserDropdown = ({ username }) => {
   const intl = useIntl();
   const { authenticatedUser } = useContext(AppContext);
-  const itemsByRole = useGetMenuOptionsByRole();
+  const itemsByRole = useGetMenuOptionsByRole().map(item => ({
+    href: item.href,
+    message: item.content,
+  }));
 
   const displayName = authenticatedUser?.name || username;
 
