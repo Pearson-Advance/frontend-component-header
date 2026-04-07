@@ -11,7 +11,7 @@ import {
 } from '@edx/frontend-platform';
 
 import PropTypes from 'prop-types';
-import useGetMenuOptionsByRole from './hooks';
+import useGetMenuOptionsByRole, { useGetMFEConfig } from './hooks';
 
 import DesktopHeaderSlot from './plugin-slots/DesktopHeaderSlot';
 import MobileHeaderSlot from './plugin-slots/MobileHeaderSlot';
@@ -55,6 +55,7 @@ const Header = ({
   const intl = useIntl();
 
   const itemsByRole = useGetMenuOptionsByRole(appID);
+  const mfeConfigs = useGetMFEConfig(appID);
 
   const defaultMainMenu = [
     {
@@ -62,7 +63,12 @@ const Header = ({
       href: `${config.LMS_BASE_URL}/dashboard`,
       content: intl.formatMessage(messages['header.links.courses']),
     },
-  ];
+    mfeConfigs.ENABLE_EXAM_DASHBOARD && {
+      type: 'item',
+      href: `${mfeConfigs.WEBNG_EXAM_MFE_BASE_URL}/dashboard`,
+      content: intl.formatMessage(messages['header.links.exams']),
+    },
+  ].filter(Boolean);
   const defaultUserMenu = authenticatedUser === null ? [] : [{
     heading: '',
     items: [
